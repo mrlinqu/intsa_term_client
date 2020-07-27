@@ -3,6 +3,7 @@ pyinstaller --noconfirm^
     --name="insta_term" ^
     --add-binary="nxproxy;nxproxy" ^
     --add-binary="vcxsrv;vcxsrv" ^
+    --add-binary="gsview;gsview" ^
     --version-file="versionfile.txt" ^
     main.py
 
