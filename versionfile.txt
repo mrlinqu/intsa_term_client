@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(0, 1, 0, 0),
-    prodvers=(0, 1, 0, 0),
+    filevers=(0, 2, 0, 0),
+    prodvers=(0, 2, 0, 0),
     #mask=0x3f,
     #flags=0x0,
     #OS=0x40004,
@@ -18,10 +18,10 @@ VSVersionInfo(
                 StringStruct(u'FileDescription', u'Client application for Intsa terminal server'),
                 #StringStruct(u'FileVersion', u'6.1.7601.17514    (win7sp1_rtm.101119-1850)'),
                 StringStruct(u'InternalName', u'Intsa terminal client'),
-                #StringStruct(u'LegalCopyright', u'HA corporation. All rights reserved.'),
+                StringStruct(u'LegalCopyright', u'Copyright (c) 2020 Roman Khuramshin <mr.linqu@gmail.com>'),
                 StringStruct(u'OriginalFilename', u'insta_term.exe'),
                 StringStruct(u'ProductName', u'Intsa terminal client'),
-                StringStruct(u'ProductVersion', u'0.1.0.0')
+                StringStruct(u'ProductVersion', u'0.2.0.0')
             ]
         )
     ]), 
