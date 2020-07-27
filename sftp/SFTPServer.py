@@ -50,9 +50,7 @@ class SFTPServerHandler(socketserver.BaseRequestHandler):
 class SFTPServer:
     RSAKEY_STRENGTH = 1024
     RSAKeyHost = paramiko.RSAKey.generate(RSAKEY_STRENGTH)
-    #Username = 'u' + str(time.time_ns())
     Username = time.strftime('u%Y%m%d%H%M%S')
-    #Username = 'tst_usr'
     RSAKeyAuth = paramiko.RSAKey.generate(RSAKEY_STRENGTH)
     root_path = None
 
