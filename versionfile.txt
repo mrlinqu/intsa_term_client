@@ -19,7 +19,7 @@ VSVersionInfo(
                 #StringStruct(u'FileVersion', u'6.1.7601.17514    (win7sp1_rtm.101119-1850)'),
                 StringStruct(u'InternalName', u'Intsa terminal client'),
                 StringStruct(u'LegalCopyright', u'Copyright (c) 2020 Roman Khuramshin <mr.linqu@gmail.com>'),
-                StringStruct(u'OriginalFilename', u'insta_term.exe'),
+                StringStruct(u'OriginalFilename', u'intsa_term.exe'),
                 StringStruct(u'ProductName', u'Intsa terminal client'),
                 StringStruct(u'ProductVersion', u'0.2.0.0')
             ]

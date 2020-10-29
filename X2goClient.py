@@ -180,8 +180,8 @@ class X2goClient(threading.Thread):
             raise X2goClientException('Ошибка соединения с сервером!')
         except paramiko.ssh_exception.AuthenticationException as e:
             raise X2goClientException('Неправильный логин или пароль!')
-        except Exception:
-            raise X2goClientException('Неизвестная ошибка соединения!')
+        #except Exception:
+        #    raise X2goClientException('Неизвестная ошибка соединения!')
 
     def stopSsh(self):
         if self.ssh:
@@ -208,8 +208,8 @@ class X2goClient(threading.Thread):
         stdin, stdout, stderr = self.ssh.exec_command(cmd)
         data = stdout.read().decode()
         err = stderr.read().decode()
-        logging.debug('data: %s',data)
-        logging.debug('err: %s',err)
+        logging.debug('findSession data: %s',data)
+        logging.debug('findSession err: %s',err)
         
         if err:
             raise X2goClientException('Ошибка при получении списка запущенных сессий!')
@@ -238,8 +238,8 @@ class X2goClient(threading.Thread):
         stdin, stdout, stderr = self.ssh.exec_command(cmd)
         data = stdout.read().decode()
         err = stderr.read().decode()
-        logging.debug('data: %s',data)
-        logging.debug('err: %s',err)
+        logging.debug('startAgent data: %s',data)
+        logging.debug('startAgent err: %s',err)
         if err:
             raise X2goClientException('Ошибка при запуске сессии!')
 
@@ -263,8 +263,8 @@ class X2goClient(threading.Thread):
         stdin, stdout, stderr = self.ssh.exec_command(cmd)
         data = stdout.read().decode()
         err = stderr.read().decode()
-        logging.debug('data: %s',data)
-        logging.debug('err: %s',err)
+        logging.debug('resumeSession data: %s',data)
+        logging.debug('resumeSession err: %s',err)
 
         #if err:
         #    raise X2goClientException('Ошибка при возобновлении сессии!')

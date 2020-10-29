@@ -1,6 +1,6 @@
 pyinstaller --noconfirm^
     --onefile --noconsole ^
-    --name="insta_term" ^
+    --name="intsa_term" ^
     --add-binary="nxproxy;nxproxy" ^
     --add-binary="vcxsrv;vcxsrv" ^
     --add-binary="gsview;gsview" ^
