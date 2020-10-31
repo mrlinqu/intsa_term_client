@@ -33,7 +33,7 @@ class MainWindow(threading.Thread):
         self.root.title("Insta : Подключение к удаленному рабочему столу")
         
         wnd_w = 350
-        wnd_h = 270
+        wnd_h = 310
         wnd_x = int(self.root.winfo_screenwidth()/2 - wnd_w/2)
         wnd_y = int(self.root.winfo_screenheight()/2 - wnd_h/2)
         self.root.geometry('%sx%s+%s+%s' % (wnd_w, wnd_h, wnd_x, wnd_y))
@@ -55,8 +55,11 @@ class MainWindow(threading.Thread):
         #self.statusText.set('Lorem ipsum dolor sit amet, consectetur adipiscing elit')
         self.statusText.set('Подключение...')
         self.paramsShowed = False
-
-
+        self.keyauth = IntVar()
+        self.keyauth.set(config.get('keyauth',0))
+        self.newpass1 = StringVar()
+        self.newpass2 = StringVar()
+        
         self.initWnd(self.root)
 
         self.root.mainloop()
@@ -85,6 +88,77 @@ class MainWindow(threading.Thread):
     
     
     ################################################################################################
+    ################################################################################################
+
+
+    def showNewpassModal(self):
+        self.root.wm_attributes("-disabled", True)
+
+        self.toplevel_dialog = Toplevel(self.root)
+
+        x = self.root.winfo_x() + (15 if self.paramsShowed else -25)
+        y = self.root.winfo_y() + 130
+
+        self.toplevel_dialog.wm_attributes('-toolwindow','true')
+
+        self.toplevel_dialog.geometry("400x160+%s+%s" % (x, y,))
+        self.toplevel_dialog.resizable(False, False)
+        
+        self.toplevel_dialog.title("Новый пароль для упрощенного подключения")
+
+        self.toplevel_dialog.transient(self.root)
+
+        self.toplevel_dialog.protocol("WM_DELETE_WINDOW", self.on_newpassModal_btnCancel_click)
+
+        Frame(self.toplevel_dialog, ).pack(fill=X, pady=10,)
+
+        # newpass1 ----------------------------------------------------------------
+        newpass1Frame = Frame(self.toplevel_dialog)
+        newpass1Frame.pack(fill=X, padx=30, pady=7,)
+
+        newpass1Label = Label(newpass1Frame, text="Пароль:", width=20, )
+        newpass1Label.pack(side=LEFT)
+
+        newpass1Input = Entry(newpass1Frame, textvariable=self.newpass1, show="●")
+        newpass1Input.pack(fill=X, expand=True)
+
+        # newpass2 ----------------------------------------------------------------
+        newpass2Frame = Frame(self.toplevel_dialog)
+        newpass2Frame.pack(fill=X, padx=30, pady=7,)
+
+        newpass2Label = Label(newpass2Frame, text="Повторите пароль:", width=20, )
+        newpass2Label.pack(side=LEFT)
+
+        newpass2Input = Entry(newpass2Frame, textvariable=self.newpass2, show="●")
+        newpass2Input.pack(fill=X, expand=True)
+
+        # buttons ----------------------------------------------------------------
+        btnFrame = Frame(self.toplevel_dialog, )#borderwidth=2, relief='groove')
+        btnFrame.pack(side=BOTTOM, fill=BOTH, padx=30, pady=20,)
+
+        btnCancel = Button(btnFrame, text='Отмена', width=12, command=self.on_newpassModal_btnCancel_click)
+        btnCancel.pack(side=RIGHT)
+
+        btnOk = Button(btnFrame, text='OK', width=12, command=self.on_newpassModal_btnOk_click)
+        btnOk.pack(side=RIGHT, padx=10,)
+        pass
+
+    def on_newpassModal_btnCancel_click(self):
+        self.root.wm_attributes("-disabled", False) # IMPORTANT!
+        self.toplevel_dialog.destroy()
+        self.toplevel_dialog = None
+
+        self.root.deiconify()
+        pass
+
+    def on_newpassModal_btnOk_click(self):
+        if (self.newpass1.get() != self.newpass2.get()):
+            tkinter.messagebox.showerror(message='Пароли не совпадают!')
+        else:
+            self.on_newpassModal_btnCancel_click()
+            self.onNewpassOk(keypasswd=self.newpass1.get())
+        pass
+
     ################################################################################################
 
 
@@ -136,6 +210,9 @@ class MainWindow(threading.Thread):
         self.root.deiconify()
         pass
 
+    ################################################################################################
+
+
     def initWnd(self, parent):
         #########################################################################
         logoFrame = Frame(parent, )#borderwidth=2, relief='groove')
@@ -167,6 +244,13 @@ class MainWindow(threading.Thread):
 
         passwdInput = Entry(passwdFrame, textvariable=self.passwd, show="●")
         passwdInput.pack(fill=X, expand=True)
+
+        # keyauth ----------------------------------------------------------------
+        keyauthFrame = Frame(siginFrame)
+        keyauthFrame.pack(fill=X, pady=7,)
+
+        keyauthCheck = Checkbutton(keyauthFrame, text='простая авторизация', variable=self.keyauth)
+        keyauthCheck.pack(side=LEFT)
 
         # ----------------------------------------------------------------
         if not self.username.get():
@@ -250,10 +334,12 @@ class MainWindow(threading.Thread):
 
     def on_btnParams_click(self,e):
         if self.paramsShowed:
-            self.root.geometry("350x270")
+            #self.root.geometry("350x270")
+            self.root.geometry("350x310")
             pass
         else:
-            self.root.geometry("430x460")
+            #self.root.geometry("430x460")
+            self.root.geometry("430x500")
             pass
 
         self.paramsShowed = not self.paramsShowed
@@ -275,13 +361,13 @@ class MainWindow(threading.Thread):
         pass
 
     def on_btnOk_click(self):
-        self.showStatusModal()
+        #self.showStatusModal()
         if self.onOk:
             prn = self.printerInput.get()
             if prn == PRN_NOT_USE:
                 prn = None
             shr = self.sharingList.get(0,END)
-            self.onOk(username=self.username.get(), passwd=self.passwd.get(), printer=prn, shares=shr)
+            self.onOk(username=self.username.get(), passwd=self.passwd.get(), printer=prn, shares=shr, keyauth=self.keyauth.get())
         pass
 
     def on_btnCancel_click(self):

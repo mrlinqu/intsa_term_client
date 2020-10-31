@@ -31,6 +31,7 @@ class X2goClient(threading.Thread):
     password = ''
     printer = None
     shares = None
+    authkey = None
 
     ssh = None
     findedSessionInfo = None
@@ -46,13 +47,14 @@ class X2goClient(threading.Thread):
     onChangeStatus = None
     onStarted = None
 
-    def __init__(self, user, password, printer, shares, ):
+    def __init__(self, user, printer, shares, password=None, authkey=None, ):
         super(X2goClient, self).__init__()
 
         self.user = user
         self.password = password
         self.printer = printer
         self.shares = shares
+        self.authkey = authkey
 
         self.evt_stop = threading.Event()
 
@@ -165,9 +167,17 @@ class X2goClient(threading.Thread):
 
     def startSsh(self, host, port, user, password):
         try:
+            connectParams = {'hostname':host, 'username':user, 'port':port}
+            if (password):
+                logging.debug('auth by password')
+                connectParams['password'] = password
+            else:
+                logging.debug('auth by publickey')
+                connectParams['pkey'] = self.authkey
+
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect(hostname=host, username=user, password=password, port=port)
+            self.ssh.connect(**connectParams)
 
             stdin, stdout, stderr = self.ssh.exec_command('hostname')
             self.hostname = stdout.read().decode().strip()
@@ -176,6 +186,11 @@ class X2goClient(threading.Thread):
             stdin, stdout, stderr = self.ssh.exec_command('echo $HOME')
             self.homedir = stdout.read().decode().strip()
             logging.debug('homedir:  %s', self.homedir)
+            
+            if (password and self.authkey):
+                logging.debug('write auth key')
+                self.sshWriteFile('~/.ssh/authorized_keys', "ssh-rsa %s\n" % (self.authkey.get_base64()))
+                logging.debug('write auth key: ok')
         except paramiko.ssh_exception.NoValidConnectionsError as e:
             raise X2goClientException('Ошибка соединения с сервером!')
         except paramiko.ssh_exception.AuthenticationException as e:

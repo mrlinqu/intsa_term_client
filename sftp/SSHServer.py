@@ -36,6 +36,7 @@ class SSHServer(paramiko.ServerInterface):
         #print('%s' % (key, ))
         #print('%s' % (self.auth_key, ))
         if username == self.username:
+            # some sheet... this is maybe not correct 
             if type(key) == paramiko.RSAKey and key == self.auth_key:
                 logging.info('sFTP server %s: publickey auth (type: %s) has been successful' % (self, key.get_name()))
                 return paramiko.AUTH_SUCCESSFUL

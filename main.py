@@ -13,6 +13,9 @@ import time
 import threading
 import logging
 import config
+import functools
+import paramiko
+from tkinter import messagebox
 
 # add filemode="w" to overwrite
 #logging.basicConfig(filename="sample.log", level=logging.INFO)
@@ -61,10 +64,10 @@ class Main:
     def wait(self):
         pass
 
-    def wndLock(self):
-        if self.wMain:
-            self.wMain.lock()
-        pass
+    #def wndLock(self):
+    #    if self.wMain:
+    #        self.wMain.lock()
+    #    pass
 
     def wndUnlock(self):
         if self.wMain:
@@ -76,14 +79,60 @@ class Main:
             self.wMain.setStatus(text)
         pass
 
-    def onWndOk(self, username, passwd, printer, shares):
-        self.wndLock()
-        self.paramsForSave = {'username':username, 'printer':printer, 'shares':shares,} #'password':passwd,
-        self.client = X2goClient(user=username, password=passwd, printer=printer, shares=shares, )
+    def onWndOk(self, username, passwd, printer, shares, keyauth,key=None):
+        self.wMain.lock()
+
+        clientParams = {'user':username, 'printer':printer, 'shares':shares}
+
+        if (keyauth and not key):
+            keyfilename = '%s.key' % username
+            if not os.path.isfile(keyfilename):
+                self.wMain.onNewpassOk = functools.partial(self.onNewpassOk, username=username, passwd=passwd, printer=printer, shares=shares)
+                self.wMain.showNewpassModal()
+                return
+            #f = open('.pem','r')
+            #s = f.read()
+            #keydata = StringIO.StringIO(s)
+            #key = paramiko.RSAKey.from_private_key(keydata)
+            try:
+                key = paramiko.RSAKey.from_private_key_file(keyfilename, passwd)
+            except paramiko.ssh_exception.PasswordRequiredException as e:
+                logging.debug('password required for key')
+                messagebox.showerror(message='Требуется ввести пароль упрощенной авторизации!')
+                return
+            except paramiko.ssh_exception.SSHException as e:
+                logging.debug('incorrect password for key')
+                messagebox.showerror(message='Неверный пароль упрощенной авторизации!')
+                return
+            except Exception:
+                logging.debug('auth key readinind error')
+                messagebox.showerror(message='Ошибка упрощенной авторизации!')
+                return
+
+            clientParams['authkey'] = key
+        else:
+            if (keyauth):
+                clientParams['authkey'] = key
+            clientParams['password'] = passwd
+        
+        self.wMain.showStatusModal()
+
+        self.paramsForSave = {'username':username, 'printer':printer, 'shares':shares, 'keyauth':keyauth} #'password':passwd,
+
+        self.client = X2goClient(**clientParams)
         self.client.onChangeStatus = self.onClientChangeStatus
         self.client.onError = self.onClientError
         self.client.onStarted = self.onClientStarted
         self.client.start()
+        pass
+
+
+    def onNewpassOk(self, username, printer, shares, passwd, keypasswd):
+        keyfilename = '%s.key' % username
+        RSAKEY_STRENGTH = 4096
+        key = paramiko.RSAKey.generate(RSAKEY_STRENGTH)
+        key.write_private_key_file(keyfilename, keypasswd)
+        self.onWndOk(username=username, passwd=passwd, printer=printer, shares=shares, keyauth=1, key=key)
         pass
 
 
@@ -95,11 +144,6 @@ class Main:
             logging.debug('client thread is_alive: %s', a)
             time.sleep(3) if a else None
 
-        self.afterClientTerminate()
-        pass
-
-
-    def afterClientTerminate(self):
         self.client = None
         self.waitClientTerminate_thread = None
         self.wndUnlock()
